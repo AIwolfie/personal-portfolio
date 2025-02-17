@@ -24,7 +24,7 @@ WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "916352191121")  # Replace with y
 ALLOWED_TAGS = []
 ALLOWED_ATTRS = {}
 
-@app.route('/space-y-4', methods=['POST'])
+@app.route('/submit', methods=['POST'])
 @limiter.limit("5 per minute")  # Rate limit applied
 def submit():
     name = request.form.get('name', '').strip()
