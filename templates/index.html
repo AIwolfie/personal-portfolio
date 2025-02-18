@@ -46,6 +46,44 @@ DEFAULT: '8px',
 }
 }
 }
+
+function updateFilterButtons() {
+  const filterButtons = document.getElementById('filter-buttons');
+  const counts = {
+    all: bounties.length,
+    Critical: bounties.filter(b => b.severity === 'Critical').length,
+    High: bounties.filter(b => b.severity === 'High').length,
+    Medium: bounties.filter(b => b.severity === 'Medium').length,
+    Low: bounties.filter(b => b.severity === 'Low').length
+  };
+  
+  const buttonData = [
+    { text: 'All', count: counts.all },
+    { text: 'Critical', count: counts.Critical },
+    { text: 'High', count: counts.High },
+    { text: 'Medium', count: counts.Medium },
+    { text: 'Low', count: counts.Low }
+  ];
+  
+  filterButtons.innerHTML = buttonData.map(({ text, count }) => `
+    <button 
+      class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap" 
+      onclick="filterFindings('${text === 'All' ? 'all' : text}')"
+    >
+      ${text} (${count})
+    </button>
+  `).join('');
+}
+
+// Update active button state
+document.querySelectorAll('#filter-buttons button').forEach(btn => {
+  const buttonText = btn.textContent.split(' ')[0].toLowerCase();
+  if (buttonText === severity.toLowerCase()) {
+    btn.classList.add('bg-white', 'shadow-sm');
+  } else {
+    btn.classList.remove('bg-white', 'shadow-sm');
+  }
+});
 </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
