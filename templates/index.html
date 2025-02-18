@@ -75,15 +75,71 @@ function updateFilterButtons() {
   `).join('');
 }
 
-// Update active button state
-document.querySelectorAll('#filter-buttons button').forEach(btn => {
-  const buttonText = btn.textContent.split(' ')[0].toLowerCase();
-  if (buttonText === severity.toLowerCase()) {
-    btn.classList.add('bg-white', 'shadow-sm');
-  } else {
-    btn.classList.remove('bg-white', 'shadow-sm');
+// Call updateFilterButtons before initial load
+updateFilterButtons();
+
+function filterFindings(severity) {
+  const container = document.getElementById('findings-container');
+  const viewMoreBtn = document.getElementById('view-more-btn');
+  container.innerHTML = '';
+  
+  const filteredBounties = severity === 'all' ? bounties : bounties.filter(b => b.severity === severity);
+  
+  function renderFindings() {
+    for (let i = 0; i < Math.min(visibleFindings, filteredBounties.length); i++) {
+      const bounty = filteredBounties[i];
+      const severityColor = {
+        'Critical': 'red',
+        'High': 'orange',
+        'Medium': 'yellow',
+        'Low': 'blue'
+      }[bounty.severity];
+      
+      container.innerHTML += `
+        <div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="inline-block px-3 py-1 text-sm font-medium text-${severityColor}-700 bg-${severityColor}-100 rounded-full mb-3">${bounty.severity} Severity</span>
+              <h3 class="text-xl font-semibold mb-2">${bounty.title}</h3>
+              <p class="text-gray-600 mb-4">${bounty.description}</p>
+            </div>
+            <span class="text-green-600 font-semibold">${bounty.bounty} Bounty</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-500">
+            <span class="flex items-center gap-1">
+              <i class="ri-calendar-line"></i>
+              <span>Reported: ${bounty.date}</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <i class="ri-building-line"></i>
+              <span>${bounty.company}</span>
+            </span>
+          </div>
+        </div>
+      `;
+    }
+    
+    viewMoreBtn.style.display = visibleFindings < filteredBounties.length ? 'inline-block' : 'none';
   }
-});
+  
+  renderFindings();
+  
+  viewMoreBtn.onclick = () => {
+    visibleFindings += incrementAmount;
+    renderFindings();
+  };
+  
+  // Update active button state
+  document.querySelectorAll('#filter-buttons button').forEach(btn => {
+    const buttonText = btn.textContent.split(' ')[0].toLowerCase();
+    if (buttonText === severity.toLowerCase()) {
+      btn.classList.add('bg-white', 'shadow-sm');
+    } else {
+      btn.classList.remove('bg-white', 'shadow-sm');
+    }
+  });
+}
+
 </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -211,12 +267,7 @@ Let's connect and secure the digital world
 </div>
 </div>
 <h2 class="text-2xl font-bold mb-8">Notable Findings</h2>
-<div class="bg-gray-50 rounded-full p-1 flex flex-wrap justify-center gap-2 mb-8 overflow-x-auto whitespace-nowrap">
-<button class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all active whitespace-nowrap" onclick="filterFindings('all')">All</button>
-<button class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap" onclick="filterFindings('Critical')">Critical</button>
-<button class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap" onclick="filterFindings('High')">High</button>
-<button class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap" onclick="filterFindings('Medium')">Medium</button>
-<button class="px-4 md:px-6 py-2 text-sm md:text-base rounded-full text-gray-700 hover:bg-white hover:shadow-sm transition-all whitespace-nowrap" onclick="filterFindings('Low')">Low</button>
+<div class="bg-gray-50 rounded-full p-1 flex flex-wrap justify-center gap-2 mb-8 overflow-x-auto whitespace-nowrap" id="filter-buttons">
 </div>
 <div class="grid grid-cols-1 gap-6 mb-12" id="findings-container">
 <div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -260,6 +311,7 @@ Let's connect and secure the digital world
 </div>
 </div>
 </div>
+<button id="view-more-btn">View More</button>
 <h2 class="text-2xl font-bold mb-8">Portfolio</h2>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
 <div class="bg-white rounded-lg overflow-hidden shadow-lg">
@@ -330,7 +382,7 @@ class="w-full h-48 object-cover">
 <div class="space-y-4">
 <div class="flex items-center gap-3">
 <i class="ri-mail-line text-primary text-xl"></i>
-<span class="text-gray-700">mayankmalaviya3@gmail.com</span>
+<span class="text-gray-700"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="375a564e56595c5a565b56415e4e560477505a565e5b1954585a">[email&#160;protected]</a></span>
 </div>
 <div class="flex items-center gap-3">
 <i class="ri-map-pin-line text-primary text-xl"></i>
@@ -363,7 +415,7 @@ class="w-full h-48 object-cover">
 <p>© 2025 Mayank. All rights reserved.</p>
 </div>
 </footer>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const bounties = [
 {
 severity: 'Low',
@@ -470,53 +522,77 @@ date: 'Jan 2025',
 company: 'E-commerce Platform'
 },
 ];
+
+let visibleFindings = 3;
+const incrementAmount = 3;
+
 function filterFindings(severity) {
-const container = document.getElementById('findings-container');
-container.innerHTML = '';
-const filteredBounties = severity === 'all' ? bounties : bounties.filter(b => b.severity === severity);
-filteredBounties.forEach(bounty => {
-const severityColor = {
-'Critical': 'red',
-'High': 'orange',
-'Medium': 'yellow',
-'Low': 'blue'
-}[bounty.severity];
-container.innerHTML += `
-<div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-<div class="flex items-start justify-between">
-<div>
-<span class="inline-block px-3 py-1 text-sm font-medium text-${severityColor}-700 bg-${severityColor}-100 rounded-full mb-3">${bounty.severity} Severity</span>
-<h3 class="text-xl font-semibold mb-2">${bounty.title}</h3>
-<p class="text-gray-600 mb-4">${bounty.description}</p>
-</div>
-<span class="text-green-600 font-semibold">${bounty.bounty} Bounty</span>
-</div>
-<div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-500">
-<span class="flex items-center gap-1">
-<i class="ri-calendar-line"></i>
-<span>Reported: ${bounty.date}</span>
-</span>
-<span class="flex items-center gap-1">
-<i class="ri-building-line"></i>
-<span>${bounty.company}</span>
-</span>
-</div>
-</div>
-`;
-});
-// Update active button state
-document.querySelectorAll('.bg-gray-50 button').forEach(btn => {
-if (btn.textContent.toLowerCase() === severity.toLowerCase()) {
-btn.classList.add('bg-white', 'shadow-sm');
-} else {
-btn.classList.remove('bg-white', 'shadow-sm');
+  const container = document.getElementById('findings-container');
+  const viewMoreBtn = document.getElementById('view-more-btn');
+  container.innerHTML = '';
+  
+  const filteredBounties = severity === 'all' ? bounties : bounties.filter(b => b.severity === severity);
+  
+  function renderFindings() {
+    for (let i = 0; i < Math.min(visibleFindings, filteredBounties.length); i++) {
+      const bounty = filteredBounties[i];
+      const severityColor = {
+        'Critical': 'red',
+        'High': 'orange',
+        'Medium': 'yellow',
+        'Low': 'blue'
+      }[bounty.severity];
+      
+      container.innerHTML += `
+        <div class="bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="inline-block px-3 py-1 text-sm font-medium text-${severityColor}-700 bg-${severityColor}-100 rounded-full mb-3">${bounty.severity} Severity</span>
+              <h3 class="text-xl font-semibold mb-2">${bounty.title}</h3>
+              <p class="text-gray-600 mb-4">${bounty.description}</p>
+            </div>
+            <span class="text-green-600 font-semibold">${bounty.bounty} Bounty</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-500">
+            <span class="flex items-center gap-1">
+              <i class="ri-calendar-line"></i>
+              <span>Reported: ${bounty.date}</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <i class="ri-building-line"></i>
+              <span>${bounty.company}</span>
+            </span>
+          </div>
+        </div>
+      `;
+    }
+    
+    viewMoreBtn.style.display = visibleFindings < filteredBounties.length ? 'inline-block' : 'none';
+  }
+  
+  renderFindings();
+  
+  viewMoreBtn.onclick = () => {
+    visibleFindings += incrementAmount;
+    renderFindings();
+  };
+  
+  // Update active button state
+  document.querySelectorAll('#filter-buttons button').forEach(btn => {
+    const buttonText = btn.textContent.split(' ')[0].toLowerCase();
+    if (buttonText === severity.toLowerCase()) {
+      btn.classList.add('bg-white', 'shadow-sm');
+    } else {
+      btn.classList.remove('bg-white', 'shadow-sm');
+    }
+  });
 }
-});
-}
+
 // Initial load
 filterFindings('all');
+
 document.querySelector('form').addEventListener('submit', async function(e) {
-    e.preventDefault();  // Prevent default form submission
+  e.preventDefault();  // Prevent default form submission
 
     const formData = {
         name: document.getElementById('name').value,
@@ -567,3 +643,4 @@ document.querySelector('form').addEventListener('submit', async function(e) {
 </script>
 </body>
 </html>
+
