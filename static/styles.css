@@ -1,0 +1,16 @@
+:where([class^="ri-"])::before { 
+    content: "\f3c2"; 
+}
+
+body { 
+    font-family: 'Inter', sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
